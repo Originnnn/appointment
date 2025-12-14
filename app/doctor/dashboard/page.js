@@ -155,8 +155,11 @@ export default function DoctorDashboard() {
                 ))}
               </div>
             )}
-            <button className="mt-4 w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-              + Thêm lịch làm việc
+            <button 
+              onClick={() => router.push('/doctor/schedule')}
+              className="mt-4 w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+            >
+              + Quản lý lịch làm việc
             </button>
           </div>
         </div>
