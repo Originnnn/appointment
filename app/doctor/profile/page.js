@@ -2,6 +2,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
+import DashboardHeader from '@/components/ui/DashboardHeader';
+import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import Card from '@/components/ui/Card';
+import Input from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
 
 export default function DoctorProfile() {
   const router = useRouter();
@@ -17,6 +22,7 @@ export default function DoctorProfile() {
     phone: '',
     description: '',
   });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -63,26 +69,39 @@ export default function DoctorProfile() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
     setSuccess('');
+    setErrors({ ...errors, [e.target.name]: '' });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setErrors({});
     setSaving(true);
 
     try {
+      const newErrors = {};
+      
       // Validation
-      if (!formData.full_name || !formData.phone || !formData.specialty) {
-        setError('Họ tên, chuyên khoa và số điện thoại là bắt buộc!');
-        setSaving(false);
-        return;
+      if (!formData.full_name?.trim()) {
+        newErrors.full_name = 'Họ tên là bắt buộc';
+      }
+      
+      if (!formData.specialty?.trim()) {
+        newErrors.specialty = 'Chuyên khoa là bắt buộc';
+      }
+      
+      if (!formData.phone?.trim()) {
+        newErrors.phone = 'Số điện thoại là bắt buộc';
+      } else {
+        const phoneRegex = /^[0-9]{10,11}$/;
+        if (!phoneRegex.test(formData.phone)) {
+          newErrors.phone = 'Số điện thoại không hợp lệ (10-11 số)';
+        }
       }
 
-      // Kiểm tra số điện thoại hợp lệ (10-11 số)
-      const phoneRegex = /^[0-9]{10,11}$/;
-      if (!phoneRegex.test(formData.phone)) {
-        setError('Số điện thoại không hợp lệ! (10-11 số)');
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
         setSaving(false);
         return;
       }
@@ -117,127 +136,127 @@ export default function DoctorProfile() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    router.push('/login');
+  };
+
+  const handleBack = () => {
+    router.push('/doctor/dashboard');
+  };
+
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Đang tải...</div>
-      </div>
-    );
+    return <LoadingSpinner fullScreen message="Đang tải thông tin..." />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-green-600 text-white p-4 shadow-md">
-        <div className="container mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Cập Nhật Thông Tin</h1>
-          <button
-            onClick={() => router.push('/doctor/dashboard')}
-            className="bg-gray-500 px-4 py-2 rounded hover:bg-gray-600"
-          >
-            ← Quay lại
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-linear-to-br from-green-50 via-emerald-50 to-teal-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <DashboardHeader
+          title="Cập Nhật Thông Tin"
+          subtitle="Quản lý thông tin cá nhân và chuyên môn"
+          userName={formData.full_name || user?.email}
+          gradientFrom="from-green-600"
+          gradientTo="to-emerald-600"
+          onLogout={handleLogout}
+          onBack={handleBack}
+        />
 
-      <div className="container mx-auto p-6">
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-6 text-green-600">Thông tin bác sĩ</h2>
+        <Card className="animate-fade-in">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+              <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              Thông tin bác sĩ
+            </h2>
+            <p className="text-gray-600 text-sm mt-1">Cập nhật thông tin cá nhân và chuyên môn của bạn</p>
+          </div>
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-lg mb-6 flex items-start gap-3 animate-shake">
+              <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{error}</span>
             </div>
           )}
 
           {success && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-              {success}
+            <div className="bg-green-50 border-l-4 border-green-500 text-green-700 px-6 py-4 rounded-lg mb-6 flex items-start gap-3 animate-slide-down">
+              <svg className="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{success}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Họ và tên */}
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">
-                Họ và tên <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="full_name"
-                value={formData.full_name}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              />
-            </div>
+            <Input
+              label="Họ và tên"
+              type="text"
+              name="full_name"
+              value={formData.full_name}
+              onChange={handleChange}
+              error={errors.full_name}
+              placeholder="Nhập họ và tên đầy đủ"
+              required
+            />
 
-            {/* Chuyên khoa */}
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">
-                Chuyên khoa <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="specialty"
-                value={formData.specialty}
-                onChange={handleChange}
-                placeholder="VD: Tim mạch, Nhi khoa, Da liễu..."
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              />
-            </div>
+            <Input
+              label="Chuyên khoa"
+              type="text"
+              name="specialty"
+              value={formData.specialty}
+              onChange={handleChange}
+              error={errors.specialty}
+              placeholder="VD: Tim mạch, Nhi khoa, Da liễu..."
+              required
+            />
 
-            {/* Số điện thoại */}
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">
-                Số điện thoại <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="0123456789"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                required
-              />
-            </div>
+            <Input
+              label="Số điện thoại"
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              error={errors.phone}
+              placeholder="0123456789"
+              required
+            />
 
-            {/* Mô tả */}
-            <div>
-              <label className="block text-gray-700 font-semibold mb-2">
-                Mô tả / Kinh nghiệm
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Giới thiệu về bản thân, kinh nghiệm làm việc..."
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-              />
-            </div>
+            <Input
+              label="Mô tả / Kinh nghiệm"
+              type="textarea"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              error={errors.description}
+              placeholder="Giới thiệu về bản thân, kinh nghiệm làm việc, bằng cấp..."
+              rows={5}
+            />
 
-            {/* Buttons */}
-            <div className="flex gap-4">
-              <button
+            <div className="flex gap-4 pt-4 border-t border-gray-200">
+              <Button
                 type="submit"
-                disabled={saving}
-                className="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition disabled:bg-gray-400 font-semibold"
+                variant="success"
+                loading={saving}
+                className="flex-1"
               >
                 {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                onClick={() => router.push('/doctor/dashboard')}
-                className="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition font-semibold"
+                variant="secondary"
+                onClick={handleBack}
+                className="flex-1"
+                disabled={saving}
               >
                 Hủy
-              </button>
+              </Button>
             </div>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );
