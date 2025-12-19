@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
+import ChatButton from '@/components/ChatButton';
 
 export default function PatientDashboard() {
   const router = useRouter();
@@ -46,6 +47,7 @@ export default function PatientDashboard() {
         .select(`
           *,
           doctors (
+            doctor_id,
             full_name,
             specialty
           )
@@ -53,6 +55,7 @@ export default function PatientDashboard() {
         .eq('patient_id', patientData.patient_id)
         .order('appointment_date', { ascending: true });
 
+      console.log('Appointments data:', appointmentsData);
       setAppointments(appointmentsData || []);
     } catch (error) {
       console.error('Error fetching patient data:', error);
@@ -255,6 +258,7 @@ export default function PatientDashboard() {
                     <th className="p-4 text-left font-semibold text-gray-700">Chuyên khoa</th>
                     <th className="p-4 text-left font-semibold text-gray-700">Trạng thái</th>
                     <th className="p-4 text-left font-semibold text-gray-700">Ghi chú</th>
+                    <th className="p-4 text-left font-semibold text-gray-700">Nhắn tin</th>
                     <th className="p-4 text-left font-semibold text-gray-700">Hành động</th>
                   </tr>
                 </thead>
@@ -287,6 +291,24 @@ export default function PatientDashboard() {
                         </span>
                       </td>
                       <td className="p-3">{apt.note || '-'}</td>
+                      <td className="p-3">
+                        {apt.doctor_id && patient && (
+                          <ChatButton
+                            conversationId={`patient_${patient.patient_id}_doctor_${apt.doctor_id}`}
+                            currentUser={{
+                              id: patient.patient_id,
+                              name: patient.full_name,
+                              type: 'patient'
+                            }}
+                            otherUser={{
+                              id: apt.doctor_id,
+                              name: apt.doctors?.full_name,
+                              type: 'doctor'
+                            }}
+                            label="💬"
+                          />
+                        )}
+                      </td>
                       <td className="p-4">
                         {(apt.status === 'pending' || apt.status === 'confirmed') && (
                           <button

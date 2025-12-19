@@ -121,7 +121,20 @@ export default function DoctorMedicalRecords() {
     }
 
     try {
-      const existingRecord = selectedAppointment.medical_records?.[0];
+      // Query medical_records directly to check if record exists
+      const { data: existingRecords, error: queryError } = await supabase
+        .from('medical_records')
+        .select('*')
+        .eq('appointment_id', selectedAppointment.appointment_id);
+
+      if (queryError) {
+        setError('Không thể kiểm tra hồ sơ bệnh án!');
+        console.error('Query error:', queryError);
+        setSaving(false);
+        return;
+      }
+
+      const existingRecord = existingRecords && existingRecords.length > 0 ? existingRecords[0] : null;
 
       if (existingRecord) {
         // Update existing record
@@ -135,7 +148,7 @@ export default function DoctorMedicalRecords() {
 
         if (updateError) {
           setError('Không thể cập nhật hồ sơ bệnh án!');
-          console.error(updateError);
+          console.error('Update error:', updateError);
           setSaving(false);
           return;
         }
@@ -153,7 +166,7 @@ export default function DoctorMedicalRecords() {
 
         if (insertError) {
           setError('Không thể tạo hồ sơ bệnh án!');
-          console.error(insertError);
+          console.error('Insert error:', insertError);
           setSaving(false);
           return;
         }

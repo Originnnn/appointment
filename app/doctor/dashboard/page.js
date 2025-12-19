@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
+import ChatButton from '@/components/ChatButton';
 
 export default function DoctorDashboard() {
   const router = useRouter();
@@ -214,6 +215,7 @@ export default function DoctorDashboard() {
                     <th className="p-3 text-left">SĐT</th>
                     <th className="p-3 text-left">Ghi chú</th>
                     <th className="p-3 text-left">Trạng thái</th>
+                    <th className="p-3 text-left">Nhắn tin</th>
                     <th className="p-3 text-left">Hành động</th>
                   </tr>
                 </thead>
@@ -245,6 +247,24 @@ export default function DoctorDashboard() {
                             ? 'Đã hủy'
                             : 'Hoàn thành'}
                         </span>
+                      </td>
+                      <td className="p-3">
+                        {apt.patient_id && doctor && (
+                          <ChatButton
+                            conversationId={`patient_${apt.patient_id}_doctor_${doctor.doctor_id}`}
+                            currentUser={{
+                              id: doctor.doctor_id,
+                              name: doctor.full_name,
+                              type: 'doctor'
+                            }}
+                            otherUser={{
+                              id: apt.patient_id,
+                              name: apt.patients?.full_name,
+                              type: 'patient'
+                            }}
+                            label="💬"
+                          />
+                        )}
                       </td>
                       <td className="p-3">
                         {apt.status === 'pending' && (
