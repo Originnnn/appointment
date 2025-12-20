@@ -10,13 +10,16 @@
 - 🔐 **Phân quyền rõ ràng** giữa bệnh nhân và bác sĩ
 - 📋 **Quản lý đầy đủ** từ đặt lịch đến hồ sơ bệnh án
 - 🎯 **UX tối ưu** với loading states, validations, animations
+- 🤖 **AI Medical Assistant** - Trợ lý y tế thông minh với Google Gemini
+- 💬 **Real-time Chat** - Tin nhắn trực tiếp giữa bệnh nhân và bác sĩ
 
 ## 🚀 Công nghệ sử dụng
 
 - **Next.js 15** - React Framework với App Router
 - **JavaScript** - ES6+, không dùng TypeScript
 - **Tailwind CSS v4** - Utility-first CSS với custom animations
-- **Supabase** - PostgreSQL database, REST API
+- **Supabase** - PostgreSQL database, REST API, Realtime
+- **Google Gemini AI** - AI Assistant thông minh
 - **localStorage** - Quản lý authentication state (học tập)
 
 ## 📋 Các bước cài đặt
@@ -27,9 +30,25 @@
 npm install
 ```
 
-### 2. Cấu hình Supabase
+### 2. Cấu hình Supabase & Google Gemini AI
 
-File `.env.local` đã được tạo sẵn với thông tin kết nối Supabase.
+Tạo file `.env.local` trong thư mục root:
+
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# Google Gemini AI (cho AI Medical Assistant)
+GEMINI_API_KEY=your_gemini_api_key
+```
+
+**Lấy Gemini API Key:**
+1. Truy cập [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Đăng nhập và tạo API key
+3. Copy key vào `.env.local`
+
+📖 **Chi tiết cấu hình AI:** Xem file [AI_CHATBOT_README.md](./AI_CHATBOT_README.md)
 
 ### 3. Tạo database schema
 
@@ -52,16 +71,30 @@ Truy cập: http://localhost:3000
 ### Bệnh nhân:
 - Email: `patient1@test.com` / Password: `password1`
 - Email: `patient2@test.com` / Password: `password2`
+- ✅ 💬 Chat trực tiếp với bác sĩ (real-time)
+- ✅ 🤖 AI Medical Assistant - Tư vấn sức khỏe thông minh
 
-### Bác sĩ:
-- Email: `doctor1@test.com` / Password: `password1`
-- Email: `doctor2@test.com` / Password: `password2`
-
-## 📱 Chức năng
-
-### 🩺 Bệnh nhân (Patient):
+### 👨‍⚕️ Bác sĩ (Doctor):
 - ✅ Đăng ký/Đăng nhập
 - ✅ Xem và cập nhật thông tin cá nhân
+- ✅ Quản lý lịch làm việc (CRUD - Thêm/Sửa/Xóa)
+- ✅ Xem danh sách lịch hẹn
+- ✅ Xác nhận/Từ chối lịch hẹn
+- ✅ Ghi hồ sơ bệnh án (chẩn đoán + điều trị)
+- ✅ Chỉnh sửa hồ sơ bệnh án đã tạo
+- ✅ Tự động chuyển trạng thái lịch hẹn thành "completed"
+- ✅ 💬 Chat trực tiếp với bệnh nhân (real-time)
+- ✅ 🤖 AI Assistant - Hỗ trợ phân tích hồ sơ bệnh án
+
+### 🤖 AI Medical Assistant (MỚI!):
+- ✅ Tư vấn về triệu chứng sức khỏe
+- ✅ Gợi ý bác sĩ phù hợp dựa trên triệu chứng
+- ✅ Phân tích lịch sử khám bệnh
+- ✅ Context-aware (hiểu thông tin cá nhân)
+- ✅ Hướng dẫn chuẩn bị trước khám
+- ✅ Giải đáp thắc mắc 24/7
+- ✅ Quick questions để bắt đầu nhanh
+- ✅ Typing indicator chuyên nghiệp
 - ✅ Xem danh sách bác sĩ theo chuyên khoa
 - ✅ Đặt lịch hẹn mới với validation đầy đủ
 - ✅ Xem danh sách lịch hẹn của mình

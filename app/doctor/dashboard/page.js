@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
 import ChatButton from '@/components/ChatButton';
+import AIChatbot from '@/components/AIChatbot';
 import DashboardHeader from '@/components/ui/DashboardHeader';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Card from '@/components/ui/Card';
@@ -396,6 +397,15 @@ export default function DoctorDashboard() {
           )}
         </Card>
       </div>
+
+      {/* AI Medical Assistant */}
+      <AIChatbot
+        user={user}
+        patient={null}
+        doctors={doctor ? [doctor] : []}
+        appointments={appointments}
+        medicalRecords={[]}
+      />
     </div>
   );
 }

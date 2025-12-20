@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/utils/supabase';
 import ChatButton from '@/components/ChatButton';
+import AIChatbot from '@/components/AIChatbot';
 import DashboardHeader from '@/components/ui/DashboardHeader';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Button from '@/components/ui/Button';
@@ -24,6 +25,7 @@ export default function PatientDashboard() {
     patientId: patient?.patient_id
   });
   const [doctors, setDoctors] = useState([]);
+  const [medicalRecords, setMedicalRecords] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -31,6 +33,12 @@ export default function PatientDashboard() {
       fetchDoctors();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (patient?.patient_id) {
+      fetchMedicalRecords();
+    }
+  }, [patient]);
 
   const fetchDoctors = async () => {
     try {
@@ -44,6 +52,29 @@ export default function PatientDashboard() {
     } catch (err) {
       console.error('Error fetching doctors:', err);
       setError('Không thể tải danh sách bác sĩ');
+    }
+  };
+
+  const fetchMedicalRecords = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('medical_records')
+        .select(`
+          *,
+          appointments!inner(
+            appointment_date,
+            appointment_time,
+            patient_id,
+            doctors(full_name, specialty)
+          )
+        `)
+        .eq('appointments.patient_id', patient.patient_id)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setMedicalRecords(data || []);
+    } catch (err) {
+      console.error('Error fetching medical records:', err);
     }
   };
 
@@ -175,7 +206,7 @@ export default function PatientDashboard() {
           />
         )}
 
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
+        <div className="grid md:grid-cols-3 gap-6 mb-6">
           {/* Thông tin cá nhân */}
           <Card className="animate-fade-in">
             <div className="flex items-center mb-4">
@@ -220,6 +251,56 @@ export default function PatientDashboard() {
                 Xem hồ sơ bệnh án
               </Button>
             </div>
+          </Card>
+
+          {/* Smart Booking - NEW */}
+          <Card className="animate-fade-in animation-delay-150 hover:shadow-xl transition-all duration-300 bg-gradient-to-br from-white to-purple-50 border-2 border-purple-200">
+            <div className="flex items-center mb-4">
+              <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-lg">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold ml-3 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Đặt lịch thông minh
+              </h2>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Xem lịch làm việc của bác sĩ theo bảng, tự động gợi ý thay thế từ tất cả chi nhánh
+            </p>
+            <div className="space-y-3 mb-4">
+              <div className="flex items-start space-x-2 text-sm text-gray-700">
+                <svg className="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Xem lịch 7-14 ngày tới dạng bảng</span>
+              </div>
+              <div className="flex items-start space-x-2 text-sm text-gray-700">
+                <svg className="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Lọc theo chi nhánh & chuyên khoa</span>
+              </div>
+              <div className="flex items-start space-x-2 text-sm text-gray-700">
+                <svg className="w-5 h-5 text-green-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Gợi ý bác sĩ thay thế tự động</span>
+              </div>
+            </div>
+            <Button
+              onClick={() => router.push('/patient/smart-booking')}
+              variant="primary"
+              fullWidth
+              size="large"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg"
+              ariaLabel="Đi tới đặt lịch thông minh"
+            >
+              <svg className="w-6 h-6 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              Khám phá ngay
+            </Button>
           </Card>
 
           {/* Đặt lịch hẹn mới */}
@@ -292,6 +373,15 @@ export default function PatientDashboard() {
           />
         </Card>
       </div>
+
+      {/* AI Medical Assistant */}
+      <AIChatbot
+        user={user}
+        patient={patient}
+        doctors={doctors}
+        appointments={appointments}
+        medicalRecords={medicalRecords}
+      />
     </div>
   );
 }
